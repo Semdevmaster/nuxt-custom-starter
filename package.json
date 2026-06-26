@@ -21,12 +21,12 @@
   },
   "dependencies": {
     "nuxt": "^4.4.8",
-    "vue": "^3.5.38",
+    "vue": "^3.5.39",
     "vue-router": "^5.1.0"
   },
   "devDependencies": {
     "@nuxt/eslint-plugin": "^1.16.0",
-    "@types/node": "^26.0.0",
+    "@types/node": "^26.0.1",
     "@voidzero-dev/vite-plus-core": "latest",
     "typescript": "^6.0.3",
     "vite": "npm:@voidzero-dev/vite-plus-core@latest",

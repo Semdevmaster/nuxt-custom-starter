@@ -8,9 +8,9 @@ Docs are local at `node_modules/vite-plus/docs` or online at https://viteplus.de
 
 ## Review Checklist
 
-- [ ] Run `bun install` (or `vp install`) after pulling remote changes — `postinstall` runs `nuxt prepare`.
-- [ ] Run `bun run validate` (or `vp run pipeline:validate`) before finishing: `vp check`, then `nuxt typecheck`.
-- [ ] For CI parity use `bun run ci` (`vp run --cache pipeline:ci` — adds `nuxt build`).
+- [ ] Run `vp install` after pulling remote changes and before getting started.
+- [ ] Run `vp check` and `vp test` to format, lint, type check and test changes.
+- [ ] Check if there are `vite.config.ts` tasks or `package.json` scripts necessary for validation, run via `vp run <script>`.
 - [ ] If setup, runtime, or package-manager behavior looks wrong, run `vp env doctor` and include its output when asking for help.
 
 <!--VITE PLUS END-->
@@ -27,11 +27,11 @@ Nuxt owns **dev**, **build**, and **runtime**. Vite+ owns **lint**, **format**, 
 
 ## Config split
 
-| File | Responsibility |
-| --- | --- |
-| `nuxt.config.ts` | Nuxt/Nitro/Vue app config, `typescript.shim`, Devtools |
-| `vite.config.ts` | Vite+ only: Oxlint, Oxfmt, Vitest, staged hooks, `run.tasks` |
-| `tsconfig.json` | Project references to generated `.nuxt/tsconfig.*.json` — do not edit paths by hand; extend via `nuxt.config.ts` / modules |
+| File             | Responsibility                                                                                                             |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `nuxt.config.ts` | Nuxt/Nitro/Vue app config, `typescript.shim`, Devtools                                                                     |
+| `vite.config.ts` | Vite+ only: Oxlint, Oxfmt, Vitest, staged hooks, `run.tasks`                                                               |
+| `tsconfig.json`  | Project references to generated `.nuxt/tsconfig.*.json` — do not edit paths by hand; extend via `nuxt.config.ts` / modules |
 
 Do **not** put Oxlint/Oxfmt config in `oxlint.config.ts` or `.oxlintrc.json` — Vite+ expects the `lint` / `fmt` blocks in `vite.config.ts`.
 
@@ -54,17 +54,17 @@ Nuxt-specific Oxlint rules (`nuxt/prefer-import-meta`, etc.) require `@nuxt/esli
 
 ## Commands
 
-| Script | Action |
-| --- | --- |
-| `bun run dev` | `nuxt dev` |
-| `bun run build` | `nuxt build` |
-| `bun run check` / `check:fix` | `vp check` — Oxfmt + Oxlint + type-aware lint |
-| `bun run lint` / `lint:fix` | `vp lint` |
-| `bun run fmt` | `vp fmt` |
-| `bun run test` | `vp test` |
-| `bun run typecheck` | `nuxt typecheck` (vue-tsc, Nuxt project references) |
-| `bun run validate` | `nuxt prepare` → `vp check` → `nuxt typecheck` |
-| `bun run ci` | validate + `nuxt build` (cached via Vite+ tasks) |
+| Script                        | Action                                              |
+| ----------------------------- | --------------------------------------------------- |
+| `bun run dev`                 | `nuxt dev`                                          |
+| `bun run build`               | `nuxt build`                                        |
+| `bun run check` / `check:fix` | `vp check` — Oxfmt + Oxlint + type-aware lint       |
+| `bun run lint` / `lint:fix`   | `vp lint`                                           |
+| `bun run fmt`                 | `vp fmt`                                            |
+| `bun run test`                | `vp test`                                           |
+| `bun run typecheck`           | `nuxt typecheck` (vue-tsc, Nuxt project references) |
+| `bun run validate`            | `nuxt prepare` → `vp check` → `nuxt typecheck`      |
+| `bun run ci`                  | validate + `nuxt build` (cached via Vite+ tasks)    |
 
 ## Generated / ignored paths
 
