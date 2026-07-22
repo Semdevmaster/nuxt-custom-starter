@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "postinstall": "nuxt prepare",
-    "prepare": "vp config",
+    "prepare": "vp config --no-hooks",
     "dev": "nuxt dev",
     "build": "nuxt build",
     "generate": "nuxt generate",
@@ -15,27 +15,27 @@
     "lint:fix": "vp lint --fix",
     "fmt": "vp fmt",
     "test": "vp test",
-    "typecheck": "nuxt typecheck",
+    "typecheck": "vp check --no-fmt",
     "validate": "vp run pipeline:validate",
     "ci": "vp run --cache pipeline:ci"
   },
   "dependencies": {
-    "nuxt": "^4.4.8",
-    "vue": "^3.5.39",
-    "vue-router": "^5.1.0"
+    "nuxt": "^4.5.0",
+    "vue": "^3.5.40",
+    "vue-router": "^5.2.0"
   },
   "devDependencies": {
     "@nuxt/eslint-plugin": "^1.16.0",
-    "@types/node": "^26.0.1",
-    "@voidzero-dev/vite-plus-core": "latest",
-    "typescript": "^6.0.3",
-    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
-    "vite-plus": "latest",
-    "vue-tsc": "^3.3.5"
+    "@types/node": "^26.1.1",
+    "@vue/typescript-plugin": "^3.3.7",
+    "eslint": "^10.7.0",
+    "typescript": "^7.0.2",
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.5",
+    "vite-plus": "0.2.5"
   },
   "overrides": {
-    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
-    "vitest": "4.1.9"
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.5",
+    "vitest": "4.1.10"
   },
   "devEngines": {
     "packageManager": {
