@@ -54,7 +54,9 @@ export default defineConfig({
       'pipeline:ci': {
         command: ['vp check', 'nuxt typecheck', 'nuxt build'],
         dependsOn: ['nuxt:prepare'],
-        output: ['.output/**'],
+        cache: {
+          output: ['.output/**'],
+        },
       },
     },
   },
