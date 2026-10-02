@@ -1,46 +1,132 @@
-import { existsSync, readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
+import type { OxlintConfig, OxlintOverride } from 'oxlint'
 import { defineConfig } from 'vite-plus'
-import type { OxlintConfig } from 'oxlint'
 
-const rootDir = dirname(fileURLToPath(import.meta.url))
+/**
+ * Vite+ tooling only (lint / fmt / test / tasks).
+ * Nuxt owns Vite for `nuxt dev` / `nuxt build` via `nuxt.config.ts` → `vite`.
+ * A root `vite.config.ts` is required by Vite+ (cannot live under `nuxt.config`).
+ * @see https://github.com/nuxt/nuxt/discussions/34857
+ * @see https://github.com/voidzero-dev/vite-plus/issues/912
+ */
 
-function loadOxlintConfig(): OxlintConfig {
-  const configPath = join(rootDir, '.nuxt/oxlint.config.json')
+const basePlugins = [
+  'eslint',
+  'typescript',
+  'vue',
+  'import',
+  'unicorn',
+  'node',
+  'promise',
+  'oxc',
+] as const
 
-  if (existsSync(configPath)) {
-    return JSON.parse(readFileSync(configPath, 'utf-8')) as OxlintConfig
-  }
+/** Oxlint JS plugins: Vite+ helper + Nuxt-specific rules via `@nuxt/eslint-plugin`. */
+const jsPlugins = [
+  { name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin' },
+  { name: 'nuxt', specifier: '@nuxt/eslint-plugin' },
+] as const satisfies NonNullable<OxlintConfig['jsPlugins']>
 
-  return {
-    ignorePatterns: ['dist/**', '.nuxt/**', '.output/**', 'node_modules/**'],
-    jsPlugins: [{ name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin' }],
-    rules: {
-      'vite-plus/prefer-vite-plus-imports': 'error',
+const lint: OxlintConfig = {
+  ignorePatterns: ['dist/**', '.nuxt/**', '.output/**', 'node_modules/**'],
+  plugins: [...basePlugins],
+  env: {
+    browser: true,
+    node: true,
+    es2024: true,
+  },
+  // Nuxt/Vue auto-imports — kept static; type-aware lint covers the rest via `.nuxt` types.
+  globals: {
+    $fetch: 'readonly',
+    computed: 'readonly',
+    defineEmits: 'readonly',
+    defineExpose: 'readonly',
+    defineNuxtConfig: 'readonly',
+    definePageMeta: 'readonly',
+    defineProps: 'readonly',
+    navigateTo: 'readonly',
+    onMounted: 'readonly',
+    onUnmounted: 'readonly',
+    reactive: 'readonly',
+    ref: 'readonly',
+    shallowReactive: 'readonly',
+    shallowRef: 'readonly',
+    toRef: 'readonly',
+    toRefs: 'readonly',
+    useAsyncData: 'readonly',
+    useFetch: 'readonly',
+    useHead: 'readonly',
+    useLayout: 'readonly',
+    useNuxtApp: 'readonly',
+    useRoute: 'readonly',
+    useRouter: 'readonly',
+    useRuntimeConfig: 'readonly',
+    useSeoMeta: 'readonly',
+    useState: 'readonly',
+    watch: 'readonly',
+    watchEffect: 'readonly',
+  },
+  jsPlugins: [...jsPlugins],
+  rules: {
+    'vite-plus/prefer-vite-plus-imports': 'error',
+    'no-console': ['error', { allow: ['warn', 'error'] }],
+    // @nuxt/eslint-plugin (JS plugin) — Nuxt-wide
+    'nuxt/prefer-import-meta': 'error',
+    'import/first': 'error',
+    'import/no-duplicates': 'error',
+    'vue/define-emits-declaration': 'warn',
+    'vue/define-props-declaration': 'warn',
+    'vue/no-export-in-script-setup': 'error',
+    'vue/no-expose-after-await': 'error',
+    'vue/no-import-compiler-macros': 'error',
+    'vue/no-lifecycle-after-await': 'error',
+    'vue/no-reserved-component-names': 'error',
+    'vue/no-watch-after-await': 'error',
+    'vue/prefer-import-from-vue': 'error',
+    'vue/require-default-export': 'error',
+    'vue/valid-define-emits': 'error',
+    'vue/valid-define-props': 'error',
+  },
+  overrides: [
+    {
+      files: ['app/pages/**/*.{vue,tsx,jsx}'],
+      rules: {
+        'nuxt/no-page-meta-runtime-values': 'error',
+      },
     },
-    options: {
-      typeAware: true,
-      typeCheck: true,
+    {
+      files: ['nuxt.config.{js,ts,mjs,cjs}', '.config/nuxt.{js,ts,mjs,cjs}'],
+      rules: {
+        'nuxt/no-nuxt-config-test-key': 'error',
+        'nuxt/nuxt-config-keys-order': 'warn',
+      },
     },
-  }
+    {
+      files: ['**/*.{test,spec}.{js,ts,mjs,cjs}'],
+      plugins: [...basePlugins, 'vitest'],
+      rules: {
+        'no-console': 'off',
+      },
+    } satisfies OxlintOverride,
+  ],
+  options: {
+    typeAware: true,
+    typeCheck: true,
+  },
 }
 
 export default defineConfig({
-  // Vite+ tooling config only — Nuxt owns dev/build via nuxt.config.ts `vite` block.
-  lint: loadOxlintConfig(),
+  lint,
   fmt: {
     singleQuote: true,
     semi: false,
     printWidth: 100,
+    sortTailwindcss: true,
+    sortPackageJson: true,
+    sortImports: true,
   },
   test: {
     include: ['**/*.{test,spec}.{ts,js}'],
     exclude: ['node_modules/**', '.nuxt/**', '.output/**'],
-  },
-  staged: {
-    '*': 'vp check --fix',
   },
   run: {
     tasks: {
@@ -48,11 +134,11 @@ export default defineConfig({
         command: 'nuxt prepare',
       },
       'pipeline:validate': {
-        command: ['vp check', 'nuxt typecheck'],
+        command: ['vp check'],
         dependsOn: ['nuxt:prepare'],
       },
       'pipeline:ci': {
-        command: ['vp check', 'nuxt typecheck', 'nuxt build'],
+        command: ['vp check', 'nuxt build'],
         dependsOn: ['nuxt:prepare'],
         cache: {
           output: ['.output/**'],
