@@ -115,6 +115,9 @@ const lint: OxlintConfig = {
 }
 
 export default defineConfig({
+  staged: {
+    '*': 'vp check --fix',
+  },
   lint,
   fmt: {
     singleQuote: true,
